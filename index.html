@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>USA Competition Points</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #0d1117;
+      color: #e6edf3;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    .leaderboard {
+      background-color: #161b22;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    }
+
+    .leaderboard h2 {
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+
+    .leaderboard ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .leaderboard li {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.6rem 0.5rem;
+      border-bottom: 1px solid #30363d;
+    }
+
+    .leaderboard li.top {
+      background-color: #2e7d32;
+      font-weight: bold;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+
+    #map {
+      width: 100%;
+      height: 600px;
+      border-radius: 12px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.85rem;
+      color: #8b949e;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📍 USA Competition Points</h1>
+  </header>
+
+  <div class="container">
+    <div class="leaderboard">
+      <h2>🏆 Leaderboard</h2>
+      <ul id="leaderboard"></ul>
+    </div>
+
+    <div id="map"></div>
+  </div>
+
+  <div class="footer">
+    Dashboard MVP — Datos conectables a Google Sheets o Printify API
+  </div>
+
+  <script>
+    const stateData = [
+      { name: "New York", score: 20049 },
+      { name: "California", score: 15351 },
+      { name: "Florida", score: 14032 },
+      { name: "Ohio", score: 13703 },
+      { name: "Virginia", score: 13679 },
+      { name: "Texas", score: 13455 },
+      { name: "Illinois", score: 12617 },
+      { name: "Pennsylvania", score: 12571 },
+      { name: "Indiana", score: 11884 },
+      { name: "Alabama", score: 11658 }
+    ];
+
+    const getScore = (stateName) => {
+      const entry = stateData.find(s => s.name === stateName);
+      return entry ? entry.score : 0;
+    };
+
+    const getColor = (score) => {
+      return score > 18000 ? '#d32f2f' :
+             score > 15000 ? '#f57c00' :
+             score > 12000 ? '#388e3c' :
+             score > 0      ? '#1976d2' :
+                             '#2c2c2c';
+    };
+
+    const leaderboardEl = document.getElementById("leaderboard");
+    stateData.sort((a, b) => b.score - a.score).forEach((state, index) => {
+      const li = document.createElement("li");
+      li.className = index === 0 ? "top" : "";
+      li.innerHTML = `<span>${state.name}</span><span>${state.score}</span>`;
+      leaderboardEl.appendChild(li);
+    });
+
+    const map = L.map('map').setView([37.8, -96], 4);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json')
+      .then(res => res.json())
+      .then(data => {
+        L.geoJson(data, {
+          style: feature => {
+            const score = getScore(feature.properties.name);
+            return {
+              fillColor: getColor(score),
+              weight: 2,
+              opacity: 1,
+              color: 'white',
+              dashArray: '3',
+              fillOpacity: 0.7
+            };
+          },
+          onEachFeature: (feature, layer) => {
+            const score = getScore(feature.properties.name);
+            layer.bindPopup(`<strong>${feature.properties.name}</strong><br>Points: ${score}`);
+          }
+        }).addTo(map);
+      });
+  </script>
+</body>
+</html>
