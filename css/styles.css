@@ -67,10 +67,15 @@ h1 {
 }
 
 .leaderboard li.top {
-  background-color: #2e7d32;
+  background-color: #6a1b9a;
   font-weight: bold;
   border-radius: 8px;
   margin-bottom: 0.5rem;
+}
+
+.leaderboard li.selected {
+  outline: 2px solid #ffa726;
+  background-color:  #6a1b9a;
 }
 
 #map {
@@ -83,4 +88,10 @@ h1 {
   padding: 1rem;
   font-size: 0.85rem;
   color: #8b949e;
+}
+
+.selected-map-state {
+  stroke: #ffa726 !important;
+  weight: 3 !important;
+  fillOpacity: 1 !important;
 }
